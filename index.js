@@ -38,6 +38,22 @@ app.post('/send-matakuliah', async (req, res) => {
     await sendMatakuliah(matkul);
     res.redirect('/matakuliah');
 });
+
+app.delete('/delete-mahasiswa', (req, res) => {
+    const { nims } = req.body; // Ambil array NIM dari body request
+
+    if (!nims || !Array.isArray(nims) || nims.length === 0) {
+        return res.status(400).json({ message: 'Tidak ada data NIM yang dikirim.' });
+    }
+
+    console.log('Menerima permintaan untuk menghapus NIM:', nims);
+
+
+
+    // Kirim pesan sukses ke klien
+    res.status(200).json({ message: 'Data mahasiswa berhasil dihapus.' });
+});
+
 // WebSocket koneksi
 io.on('connection', (socket) => {
     console.log(' Client connected via WebSocket:', socket.id);

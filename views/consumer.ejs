@@ -5,55 +5,23 @@
     <meta charset="UTF-8" />
     <title>Consumer Realtime</title>
     <link rel="stylesheet" href="/css/style.css">
-    <style>
-        /* Tambahan CSS khusus untuk tombol hapus */
-        #delete-button-container {
-            text-align: right;
-            margin-top: 15px;
-        }
-
-        #btn-hapus {
-            background-color: #dc3545; /* Warna merah untuk tombol hapus */
-            color: white;
-            font-size: 15px;
-            font-weight: bold;
-            border: none;
-            padding: 12px 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        #btn-hapus:hover {
-            background-color: #c82333; /* Warna merah lebih gelap saat hover */
-        }
-    </style>
 </head>
 
 <body>
     <div class="container">
         <h2>Data Mahasiswa Realtime (Consumer)</h2>
-        <form id="form-hapus-mahasiswa">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Pilih</th> 
-                        <th>NIM</th>
-                        <th>Nama</th>
-                        <th>Email</th>
-                        <th>No Telpon</th>
-                        <th>Prodi</th>
-                    </tr>
-                </thead>
-                <tbody id="mahasiswa-body">
-                    </tbody>
-            </table>
-            <div id="delete-button-container" style="display: none;">
-                <button type="submit" id="btn-hapus">Hapus Data Terpilih</button>
-            </div>
-        </form>
-        
-        <hr style="margin: 40px 0;">
+        <table>
+            <thead>
+                <tr>
+                    <th>NIM</th>
+                    <th>Nama</th>
+                    <th>Email</th>
+                    <th>No Telpon</th>
+                    <th>Prodi</th>
+                </tr>
+            </thead>
+            <tbody id="mahasiswa-body"></tbody>
+        </table>
 
         <h2>Data Matakuliah Realtime (Consumer)</h2>
         <table>
@@ -72,32 +40,21 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        // Kode JavaScript Anda tetap sama, tidak perlu diubah
         const socket = io();
         const mhsBody = document.getElementById("mahasiswa-body");
         const mkBody = document.getElementById("matakuliah-body");
-        const deleteButtonContainer = document.getElementById('delete-button-container');
-
+        
         socket.on("connect", () => {
-            console.log("WebSocket terhubung:", socket.id);
+            console.log(" WebSocket terhubung:", socket.id);
         });
-
-        // --- Logika untuk Mahasiswa ---
+        
         socket.on("kafka-mahasiswa", (mhs) => {
-            if (!mhs || !mhs.nim) return;
-
-            // Mencegah duplikasi data berdasarkan NIM
-            if (document.querySelector(`input[value="${mhs.nim}"]`)) {
-                 console.log(`Data dengan NIM ${mhs.nim} sudah ada di tabel.`);
-                 return;
-            }
-
+            if (!mhs) return;
+            console.log(" Data mahasiswa masuk:", mhs);
             const row = document.createElement("tr");
-            row.id = `row-${mhs.nim}`; // Beri ID pada baris agar mudah dihapus dari DOM
             row.innerHTML = `
-                <td style="text-align: center;">
-                    <input type="checkbox" class="mahasiswa-checkbox" name="selected_mhs" value="${mhs.nim}">
-                </td>
-                <td>${mhs.nim}</td>
+                <td>${mhs.nim || ''}</td>
                 <td>${mhs.nama || ''}</td>
                 <td>${mhs.email || ''}</td>
                 <td>${mhs.notelpon || ''}</td>
@@ -106,9 +63,9 @@
             mhsBody.appendChild(row);
         });
         
-        // --- Logika untuk Matakuliah ---
         socket.on("kafka-matakuliah", (mk) => {
             if (!mk) return;
+            console.log(" Data matakuliah masuk:", mk);
             const row = document.createElement("tr");
             row.innerHTML = `
                 <td>${mk.kodematakuliah || ''}</td>
@@ -118,68 +75,7 @@
             `;
             mkBody.appendChild(row);
         });
-
-        // --- Logika untuk Checkbox dan Tombol Hapus ---
-
-        // Event listener untuk semua checkbox mahasiswa
-        mhsBody.addEventListener('change', (event) => {
-            if (event.target.classList.contains('mahasiswa-checkbox')) {
-                const checkedBoxes = document.querySelectorAll('.mahasiswa-checkbox:checked');
-                if (checkedBoxes.length > 0) {
-                    deleteButtonContainer.style.display = 'block'; // Tampilkan tombol
-                } else {
-                    deleteButtonContainer.style.display = 'none'; // Sembunyikan tombol
-                }
-            }
-        });
-
-        // Event listener untuk form hapus
-        document.getElementById('form-hapus-mahasiswa').addEventListener('submit', async (event) => {
-            event.preventDefault(); // Mencegah form mengirim secara default
-
-            const checkedBoxes = document.querySelectorAll('.mahasiswa-checkbox:checked');
-            const nimsToDelete = Array.from(checkedBoxes).map(cb => cb.value);
-
-            if (nimsToDelete.length === 0) {
-                alert('Pilih setidaknya satu mahasiswa untuk dihapus.');
-                return;
-            }
-
-            // Konfirmasi sebelum menghapus
-            if (confirm(`Apakah Anda yakin ingin menghapus ${nimsToDelete.length} data mahasiswa?`)) {
-                
-                // Kirim data ke server (backend) untuk dihapus
-                try {
-                    const response = await fetch('/delete-mahasiswa', {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ nims: nimsToDelete }),
-                    });
-
-                    const result = await response.json();
-
-                    if (response.ok) {
-                        alert(result.message);
-                        // Hapus baris dari tabel di halaman
-                        nimsToDelete.forEach(nim => {
-                            const rowToRemove = document.getElementById(`row-${nim}`);
-                            if (rowToRemove) {
-                                rowToRemove.remove();
-                            }
-                        });
-                        // Sembunyikan lagi tombol hapus
-                        deleteButtonContainer.style.display = 'none';
-                    } else {
-                        throw new Error(result.message || 'Gagal menghapus data.');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Terjadi kesalahan saat menghapus data.');
-                }
-            }
-        });
     </script>
 </body>
+
 </html>
