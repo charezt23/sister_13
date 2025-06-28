@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Input Matakuliah</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h2>Producer - Input Data Matakuliah</h2>
+        <form action="/send-matakuliah" method="POST">
+            <input type="text" name="kodematakuliah" placeholder="Kode Matakuliah" required />
+            <input type="text" name="namamatakuliah" placeholder="Nama Matakuliah" required />
+            <input type="number" name="semester" placeholder="Semester" required />
+            <input type="number" name="sks" placeholder="SKS" required />
+            <button type="submit">Kirim Data</button>
+        </form>
+        <a href="/consumer">Lihat Data Realtime →</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Form Mahasiswa</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h2>Form Mahasiswa - Kirim ke Kafka</h2>
+        <form action="/send" method="POST">
+            <input type="text" name="nim" placeholder="NIM" required />
+            <input type="text" name="nama" placeholder="Nama" required />
+            <input type="email" name="email" placeholder="Email" required />
+            <input type="text" name="notelpon" placeholder="No Telpon" required />
+            <input type="text" name="prodi" placeholder="Prodi" required />
+            <button type="submit">Kirim Data</button>
+        </form>
+        <a href="/">← Kembali ke Menu</a>
+    </div>
+</body>
+</html>
